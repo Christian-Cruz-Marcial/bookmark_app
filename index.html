@@ -100,7 +100,8 @@
             border-radius: 3px;
             background-image: url();
             background-size: cover;
-            width: 80px;
+            background-position: top center;
+            width: 120px;
             height: 60px;
             margin-right: 20px;
         }
@@ -150,29 +151,50 @@
         }
     }
         input.addEventListener('focusin', showFloater);
-        input.addEventListener('focusout', closeFloater);
+        //input.addEventListener('focusout', closeFloater);
         overlay.addEventListener('click', closeFloater);
         //---------------
         const bookmarksList = document.querySelector('.bookmarks-list');
         const bookmarkForm = document.querySelector('.bookmark-form');
         const bookmarkInput = bookmarkForm.querySelector('input[type=text]');
         const bookmarks = JSON.parse(localStorage.getItem('bookmarks')) ||[];
+        const apiUrl = 'https://opengraph.io/api/1.0/site';
+        const appId = '58858c7bcf07b61e64257391';
 
+        const myUrl = encodeURIComponent('https://twitter.com')
+
+        
         fillBookmarksList(bookmarks);
 
         function createBookmark(e){
             e.preventDefault();
 
+            if(!bookmarkInput.value) {
+                alert('we need info!');
+                return;
+            }
+            const url = encodeURIComponent(bookmarkInput.value)
+
             // add a new bookmark
-            const title = bookmarkInput.value;
+            fetch(apiUrl + '/'+ myUrl +'?app_id'+appId)
+            .then(Response => Response.json())
+            .then(data =>{
+                console.log(data.hybridGraph.title)
+                const title = bookmarkInput.value;
             const bookmark = {
-                title: title
+                title: data.hybridGraph.title,
+                Image: data.hybridGraph.Image,
+                link: data.hybridGraph.url
             };
 
             bookmarks.push(bookmark);
             fillBookmarksList(bookmarks);
             storeBookmarks(bookmarks);
             bookmarkForm.reset();
+
+            });
+
+        
 
             console.table(bookmarks)
             
@@ -189,8 +211,8 @@
         function fillBookmarksList(bookmarks =[]){
         const bookmarksHtml = bookmarks.map((bookmark, i) =>{
             return `
-            <a href="#" class='bookmark' data-id='${i}'>
-                <div class='img'></div>
+            <a href="${bookmark.link}" class='bookmark' data-id='${i}'>
+                <div class='img' style='background-image:url('${bookmark.image}')'></div>
                 <div class='title'>${bookmarks.title}</div>
                 <span class='glyphicon glyphicon-remove'></span>
                     </a>`;
